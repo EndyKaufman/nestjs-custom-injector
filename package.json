@@ -1,13 +1,46 @@
 {
   "name": "nestjs-custom-injector-workspace",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Custom injecting logic for NestJS with support multi providing",
+  "keywords": [
+    "nestjs",
+    "custom",
+    "multi",
+    "providers",
+    "decorators",
+    "global",
+    "injector",
+    "inject"
+  ],
   "license": "MIT",
+  "author": "EndyKaufman <admin@site15.ru>",
+  "engines": {
+    "node": ">=15",
+    "npm": ">=7"
+  },
+  "bugs": {
+    "url": "https://github.com/EndyKaufman/nestjs-custom-injector/issues"
+  },
+  "homepage": "https://github.com/EndyKaufman/nestjs-custom-injector",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EndyKaufman/nestjs-custom-injector.git"
+  },
+  "maintainers": [
+    {
+      "name": "EndyKaufman",
+      "email": "admin@site15.ru"
+    }
+  ],
   "scripts": {
     "rucken": "rucken",
     "nx": "nx",
-    "start": "node dist/apps/demo/main.js",
-    "build": "npm run nx -- build demo",
-    "test": "jest --runInBand --forceExit --detectOpenHandles --passWithNoTests --config=jest.config.js",
+    "build": "npm run generate && npm run nx -- build nestjs-custom-injector && npm run lib:build-changelog",
+    "release": "standard-version",
+    "publish": "npm publish ./dist/libs/nestjs-custom-injector",
+    "create-release": "npm run test && npm run build && npm run release && git push --follow-tags origin develop",
+    "lib:build-changelog": "./node_modules/.bin/cp-cli ./CHANGELOG.md ./dist/libs/nestjs-custom-injector/CHANGELOG.md",
+    "test": "npm run nx -- test demo --skip-nx-cache --json --outputFile=jest.result.json --testLocationInResults",
     "serve": "npm run nx -- serve demo",
     "serve:local": "export $(xargs < ./.env.local) && npm run serve",
     "prepare": "husky install",
@@ -33,6 +66,7 @@
     "@types/node": "14.14.33",
     "@typescript-eslint/eslint-plugin": "~5.10.0",
     "@typescript-eslint/parser": "~5.10.0",
+    "cp-cli": "^2.0.0",
     "eslint": "~8.7.0",
     "eslint-config-prettier": "8.1.0",
     "husky": "^7.0.4",
@@ -40,6 +74,7 @@
     "lint-staged": "^12.3.4",
     "prettier": "2.5.1",
     "rucken": "^3.4.0",
+    "standard-version": "^9.3.2",
     "supertest": "^6.2.2",
     "ts-jest": "27.0.5",
     "typescript": "~4.3.5"

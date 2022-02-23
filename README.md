@@ -1,90 +1,133 @@
-# NestjsCustomInjector
+# nestjs-custom-injector
 
-This project was generated using [Nx](https://nx.dev).
+[![npm version](https://badge.fury.io/js/nestjs-custom-injector.svg)](https://badge.fury.io/js/nestjs-custom-injector)
+[![monthly downloads](https://badgen.net/npm/dm/nestjs-custom-injector)](https://www.npmjs.com/package/nestjs-custom-injector)
 
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="450"></p>
+## Installation
 
-🔎 **Smart, Extensible Build Framework**
+```bash
+npm i --save nestjs-custom-injector
+```
 
-## Adding capabilities to your workspace
+## Links
 
-Nx supports many plugins which add capabilities for developing different types of applications and different tools.
+[Demo](https://nestjs-custom-injector.site15.ru/api) - Demo application with nestjs-custom-injector.
 
-These capabilities include generating applications, libraries, etc as well as the devtools to test, and build projects as well.
+## Usage
 
-Below are our core plugins:
+Create common interface with token in **animal-provider.interface.ts**
 
-- [React](https://reactjs.org)
-  - `npm install --save-dev @nrwl/react`
-- Web (no framework frontends)
-  - `npm install --save-dev @nrwl/web`
-- [Angular](https://angular.io)
-  - `npm install --save-dev @nrwl/angular`
-- [Nest](https://nestjs.com)
-  - `npm install --save-dev @nrwl/nest`
-- [Express](https://expressjs.com)
-  - `npm install --save-dev @nrwl/express`
-- [Node](https://nodejs.org)
-  - `npm install --save-dev @nrwl/node`
+```typescript
+export const ANIMAL_PROVIDER = 'ANIMAL_PROVIDER';
 
-There are also many [community plugins](https://nx.dev/community) you could add.
+export interface AnimalProviderInteface {
+  type: string;
+  say(): string;
+}
+```
 
-## Generate an application
+Create first type of logic for cats in **animal-cats.service.ts**
 
-Run `nx g @nrwl/react:app my-app` to generate an application.
+```typescript
+import { Injectable } from '@nestjs/common';
+import { AnimalProviderInteface } from './animal-provider.interface';
 
-> You can use any of the plugins above to generate applications as well.
+@Injectable()
+export class AnimalCatsService implements AnimalProviderInteface {
+  type = 'cat';
+  say(): string {
+    return 'meow';
+  }
+}
+```
 
-When using Nx, you can create multiple applications and libraries in the same workspace.
+Create second type of logic for dogs in **animal-dogs.service.ts**
 
-## Generate a library
+```typescript
+import { Injectable } from '@nestjs/common';
+import { AnimalProviderInteface } from './animal-provider.interface';
 
-Run `nx g @nrwl/react:lib my-lib` to generate a library.
+@Injectable()
+export class AnimalDogsService implements AnimalProviderInteface {
+  type = 'dog';
+  say(): string {
+    return 'woof';
+  }
+}
+```
 
-> You can also use any of the plugins above to generate libraries as well.
+Create controller **animals.controller.ts**
 
-Libraries are shareable across libraries and applications. They can be imported from `@nestjs-custom-injector-workspace/mylib`.
+```typescript
+import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { CustomInject } from 'nestjs-custom-injector';
+import {
+  AnimalProviderInteface,
+  ANIMAL_PROVIDER,
+} from './animal-provider.interface';
 
-## Development server
+@Controller('animals')
+export class AnimalsController {
+  @CustomInject(ANIMAL_PROVIDER, { multi: true })
+  private animalProviders!: AnimalProviderInteface[];
 
-Run `nx serve my-app` for a dev server. Navigate to http://localhost:4200/. The app will automatically reload if you change any of the source files.
+  @Get('animal-types')
+  animalTypes() {
+    return this.animalProviders.map((animalProvider) => animalProvider.type);
+  }
 
-## Code scaffolding
+  @Get('what-says-animals')
+  whatSaysAnimals() {
+    return this.animalProviders.map(
+      (animal) => `${animal.type} say ${animal.say()}`
+    );
+  }
 
-Run `nx g @nrwl/react:component my-component --project=my-app` to generate a new component.
+  @Get('who-say')
+  whoSay(@Query('voice') voice: string) {
+    const animal = this.animalProviders.find(
+      (animal) => animal.say() === voice
+    );
+    if (!animal) {
+      return { error: `I don't know who say ${voice}` };
+    }
+    return `${animal.type} say ${animal.say()}`;
+  }
+}
+```
 
-## Build
+Append all logic to main app module **app.module.ts**
 
-Run `nx build my-app` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+```typescript
+import { Module } from '@nestjs/common';
+import { CustomInjectorModule } from 'nestjs-custom-injector';
+import { AnimalCatsService } from './animal-cats.service';
+import { AnimalDogsService } from './animal-dogs.service';
+import { AnimalsController } from './animals.controller';
 
-## Running unit tests
+@Module({
+  ...
+  imports: [
+    ...
+    CustomInjectorModule.forRoot(),
+    CustomInjectorModule.forFeature({
+      providers: [{ provide: ANIMAL_PROVIDER, useClass: AnimalCatsService }],
+    }),
+    CustomInjectorModule.forFeature({
+      providers: [
+        { provide: ANIMAL_PROVIDER, useValue: new AnimalDogsService() },
+      ],
+    }),
+    ...
+  ],
+  controllers: [
+    AnimalsController
+  ]
+  ...
+})
+export class AppModule {}
+```
 
-Run `nx test my-app` to execute the unit tests via [Jest](https://jestjs.io).
+## License
 
-Run `nx affected:test` to execute the unit tests affected by a change.
-
-## Running end-to-end tests
-
-Run `ng e2e my-app` to execute the end-to-end tests via [Cypress](https://www.cypress.io).
-
-Run `nx affected:e2e` to execute the end-to-end tests affected by a change.
-
-## Understand your workspace
-
-Run `nx dep-graph` to see a diagram of the dependencies of your projects.
-
-## Further help
-
-Visit the [Nx Documentation](https://nx.dev) to learn more.
-
-## ☁ Nx Cloud
-
-### Distributed Computation Caching & Distributed Task Execution
-
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-cloud-card.png"></p>
-
-Nx Cloud pairs with Nx in order to enable you to build and test code more rapidly, by up to 10 times. Even teams that are new to Nx can connect to Nx Cloud and start saving time instantly.
-
-Teams using Nx gain the advantage of building full-stack applications with their preferred framework alongside Nx’s advanced code generation and project dependency graph, plus a unified experience for both frontend and backend developers.
-
-Visit [Nx Cloud](https://nx.app/) to learn more.
+MIT
