@@ -35,10 +35,12 @@
   "scripts": {
     "rucken": "rucken",
     "nx": "nx",
-    "build": "npm run generate && npm run nx -- build nestjs-custom-injector && npm run lib:build-changelog",
-    "release": "standard-version",
-    "publish": "npm publish ./dist/libs/nestjs-custom-injector",
-    "create-release": "npm run test && npm run build && npm run release && git push --follow-tags origin develop",
+    "start": "node dist/apps/demo/main.js",
+    "build": "npm run nx -- build demo",
+    "lib:build": "npm run generate && npm run nx -- build nestjs-custom-injector && npm run lib:build-changelog",
+    "lib:release": "standard-version",
+    "lib:publish": "npm publish ./dist/libs/nestjs-custom-injector",
+    "lib:create-release": "npm run test && npm run lib:build && npm run lib:release && git push --follow-tags origin develop",
     "lib:build-changelog": "./node_modules/.bin/cp-cli ./CHANGELOG.md ./dist/libs/nestjs-custom-injector/CHANGELOG.md",
     "test": "npm run nx -- test demo --skip-nx-cache --json --outputFile=jest.result.json --testLocationInResults",
     "serve": "npm run nx -- serve demo",
@@ -83,9 +85,11 @@
     "@nestjs/common": "^8.0.0",
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/swagger": "^5.2.0",
     "env-var": "^7.1.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.0.0",
+    "swagger-ui-express": "^4.3.0",
     "tslib": "^2.0.0"
   },
   "lint-staged": {

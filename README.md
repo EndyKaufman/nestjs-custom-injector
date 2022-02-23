@@ -11,7 +11,8 @@ npm i --save nestjs-custom-injector
 
 ## Links
 
-[Demo](https://nestjs-custom-injector.site15.ru/api) - Demo application with nestjs-custom-injector.
+https://nestjs-custom-injector.site15.ru/api - Demo application with nestjs-custom-injector.
+https://github.com/EndyKaufman/nestjs-custom-injector-example - Example generated with nest cli for "Usage" sections in readme.
 
 ## Usage
 
@@ -59,7 +60,7 @@ export class AnimalDogsService implements AnimalProviderInteface {
 Create controller **animals.controller.ts**
 
 ```typescript
-import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { CustomInject } from 'nestjs-custom-injector';
 import {
   AnimalProviderInteface,
@@ -121,7 +122,9 @@ import { AnimalsController } from './animals.controller';
     ...
   ],
   controllers: [
+    ...
     AnimalsController
+    ...
   ]
   ...
 })

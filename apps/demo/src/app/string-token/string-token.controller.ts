@@ -1,4 +1,5 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { CustomInject } from 'nestjs-custom-injector';
 import {
   AnimalProviderInteface,
@@ -7,6 +8,7 @@ import {
 import { CheckAnimalTypePipe } from './animal/check-animal-type.pipe';
 import { StringTokenService } from './string-token.service';
 
+@ApiTags('string-token')
 @Controller('string-token')
 export class StringTokenController {
   @CustomInject(ANIMAL_PROVIDER, { multi: true, propertyName: 'type' })

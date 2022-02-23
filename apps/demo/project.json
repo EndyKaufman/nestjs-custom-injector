@@ -10,7 +10,8 @@
         "outputPath": "dist/apps/demo",
         "main": "apps/demo/src/main.ts",
         "tsConfig": "apps/demo/tsconfig.app.json",
-        "assets": ["apps/demo/src/assets"]
+        "assets": ["apps/demo/src/assets"],
+        "webpackConfig": "apps/demo/webpack.config.js"
       },
       "configurations": {
         "production": {
