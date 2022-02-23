@@ -1,0 +1,11 @@
+{
+  "name": "nestjs-custom-injector",
+  "version": "0.0.0",
+  "i18n": [
+    {
+      "scope": "nestjs-custom-injector",
+      "path": "src/i18n",
+      "strategy": "join"
+    }
+  ]
+}

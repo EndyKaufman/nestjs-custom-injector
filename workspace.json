@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "projects": {
+    "demo": "apps/demo",
+    "nestjs-custom-injector": "libs/nestjs-custom-injector"
+  }
+}

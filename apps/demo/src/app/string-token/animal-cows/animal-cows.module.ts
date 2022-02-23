@@ -1,0 +1,22 @@
+import { Module } from '@nestjs/common';
+import { lastValueFrom, Observable } from 'rxjs';
+import { ANIMAL_PROVIDER } from '../animal/animal-provider.interface';
+import { AnimalCowsService } from './animal-cows.service';
+
+@Module({
+  providers: [
+    {
+      provide: ANIMAL_PROVIDER,
+      useFactory: () =>
+        lastValueFrom(
+          new Observable((observer) => {
+            setTimeout(() => {
+              observer.next(new AnimalCowsService());
+              observer.complete();
+            }, 5000);
+          })
+        ),
+    },
+  ],
+})
+export class AnimalCowsModule {}

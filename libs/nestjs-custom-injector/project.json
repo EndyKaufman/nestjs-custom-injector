@@ -1,0 +1,34 @@
+{
+  "root": "libs/nestjs-custom-injector",
+  "sourceRoot": "libs/nestjs-custom-injector/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/node:package",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/nestjs-custom-injector",
+        "tsConfig": "libs/nestjs-custom-injector/tsconfig.lib.json",
+        "packageJson": "libs/nestjs-custom-injector/package.json",
+        "main": "libs/nestjs-custom-injector/src/index.ts",
+        "assets": ["libs/nestjs-custom-injector/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/nestjs-custom-injector/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/nestjs-custom-injector"],
+      "options": {
+        "jestConfig": "libs/nestjs-custom-injector/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}
