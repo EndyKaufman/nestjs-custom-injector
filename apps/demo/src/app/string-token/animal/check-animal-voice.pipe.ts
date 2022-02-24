@@ -22,9 +22,9 @@ export interface CheckAnimalTypePipeOptions {
 }
 
 @Injectable()
-export class CheckAnimalTypePipe implements PipeTransform<string> {
-  @CustomInject(ANIMAL_PROVIDER, { multi: true, propertyName: 'type' })
-  protected animalProviderTypes!: AnimalProviderInteface['type'][];
+export class CheckAnimalVoicePipe implements PipeTransform<string> {
+  @CustomInject(ANIMAL_PROVIDER, { multi: true })
+  protected animalProviders!: AnimalProviderInteface[];
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected exceptionFactory: (error: string) => any;
@@ -39,13 +39,16 @@ export class CheckAnimalTypePipe implements PipeTransform<string> {
       ((error) => new HttpErrorByCode[errorHttpStatusCode](error));
   }
 
-  async transform(value: string): Promise<string> {
-    console.log(value, this.animalProviderTypes);
-    if (!this.animalProviderTypes.includes(value)) {
+  async transform(voice: string): Promise<string> {
+    if (
+      !this.animalProviders
+        .map((animalProvider) => animalProvider.say())
+        .includes(voice)
+    ) {
       throw this.exceptionFactory(
-        'Validation failed (incorrect type of animals)'
+        'Validation failed (incorrect voice of animals)'
       );
     }
-    return value;
+    return voice;
   }
 }

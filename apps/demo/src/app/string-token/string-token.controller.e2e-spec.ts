@@ -90,16 +90,33 @@ describe('StringTokenController (e2e)', () => {
         .expect(200)
         .expect({ error: `I don't know who say gav` });
     });
-    /*
-    it("Error in request who say (@Query('voice', CheckAnimalTypePipe)", () => {
+
+    it("Who say (@Query('voice', CheckAnimalTypePipe)", () => {
       try {
-        controller.whoSayWithValidateType('gav');
-        expect(true).toEqual(false);
+        return request(app.getHttpServer())
+          .get('/string-token/who-say-with-validate-type?voice=baa')
+          .expect(200)
+          .expect('sheep say baa');
       } catch (err) {
         console.log(err);
       }
     });
-*/
+
+    it("Error in request who say (@Query('voice', CheckAnimalTypePipe)", () => {
+      try {
+        return request(app.getHttpServer())
+          .get('/string-token/who-say-with-validate-type?voice=gav')
+          .expect(400)
+          .expect({
+            statusCode: 400,
+            message: 'Validation failed (incorrect voice of animals)',
+            error: 'Bad Request',
+          });
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
     it('Who say (@Inject(ANIMAL_PROVIDER))', () => {
       return request(app.getHttpServer())
         .get('/string-token/who-say-original?voice=baa')

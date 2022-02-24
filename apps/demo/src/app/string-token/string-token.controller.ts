@@ -5,7 +5,7 @@ import {
   AnimalProviderInteface,
   ANIMAL_PROVIDER,
 } from './animal/animal-provider.interface';
-import { CheckAnimalTypePipe } from './animal/check-animal-type.pipe';
+import { CheckAnimalVoicePipe } from './animal/check-animal-voice.pipe';
 import { StringTokenService } from './string-token.service';
 
 @ApiTags('string-token')
@@ -51,7 +51,7 @@ export class StringTokenController {
   }
 
   @Get('who-say-with-validate-type')
-  whoSayWithValidateType(@Query('voice', CheckAnimalTypePipe) voice: string) {
+  whoSayWithValidateType(@Query('voice', CheckAnimalVoicePipe) voice: string) {
     return this.stringTokenService.whoSay(voice);
   }
 
