@@ -8,7 +8,10 @@ import { CheckAnimalVoicePipe } from './animal/check-animal-voice.pipe';
 @ApiTags('abstract-class')
 @Controller('abstract-class')
 export class AbstractClassController {
-  @CustomInject(AbstractAnimalProvider, { multi: true, propertyName: 'type' })
+  @CustomInject<AbstractAnimalProvider['type']>(AbstractAnimalProvider, {
+    multi: true,
+    propertyName: 'type',
+  })
   private animalProviderTypes!: AbstractAnimalProvider['type'][];
 
   constructor(

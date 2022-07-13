@@ -5,7 +5,7 @@ import {
   CustomInjectorService,
 } from 'nestjs-custom-injector';
 import { AbstractAnimalProvider } from './animal/animal.provider';
-import { AnimalService } from './animal/animal.service';
+import { AbstractAnimalService } from './animal/animal.service';
 
 @Injectable()
 export class AbstractClassService {
@@ -15,7 +15,7 @@ export class AbstractClassService {
   @CustomInject(AbstractAnimalProvider, { multi: true })
   private animalProviders!: AbstractAnimalProvider[];
 
-  constructor(private readonly animalService: AnimalService) {}
+  constructor(private readonly animalService: AbstractAnimalService) {}
 
   whatSaysAnimalsWithInjector() {
     return this.customInjector

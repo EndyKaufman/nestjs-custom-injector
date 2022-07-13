@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CustomInjectorModule } from 'nestjs-custom-injector';
+import {
+  CustomInjectorBootstrapService,
+  CustomInjectorModule,
+} from 'nestjs-custom-injector';
 import { SymbolTokenController } from './symbol-token.controller';
 import { SymbolTokenModule } from './symbol-token.module';
 
@@ -13,6 +16,9 @@ describe('SymbolTokenController (unit)', () => {
     app = await Test.createTestingModule({
       imports: [CustomInjectorModule.forRoot(), SymbolTokenModule],
     }).compile();
+    await app
+      .get<CustomInjectorBootstrapService>(CustomInjectorBootstrapService)
+      .onApplicationBootstrap();
     controller = app.get<SymbolTokenController>(SymbolTokenController);
   });
 

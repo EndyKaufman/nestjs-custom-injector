@@ -8,7 +8,7 @@ import {
   AnimalProviderInteface,
   ANIMAL_PROVIDER,
 } from './animal/animal-provider.interface';
-import { AnimalService } from './animal/animal.service';
+import { StringAnimalService } from './animal/animal.service';
 
 @Injectable()
 export class StringTokenService {
@@ -18,7 +18,7 @@ export class StringTokenService {
   @CustomInject(ANIMAL_PROVIDER, { multi: true })
   private animalProviders!: AnimalProviderInteface[];
 
-  constructor(private readonly animalService: AnimalService) {}
+  constructor(private readonly animalService: StringAnimalService) {}
 
   whatSaysAnimalsWithInjector() {
     return this.customInjector
@@ -32,7 +32,7 @@ export class StringTokenService {
     );
   }
 
-  whatSaysAnimals() {
+  async whatSaysAnimals() {
     return this.animalService
       .getAnimals()
       .map((animal) => `${animal.type} say ${animal.say()}`);

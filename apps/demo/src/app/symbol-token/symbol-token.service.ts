@@ -8,7 +8,7 @@ import {
   AnimalProviderInteface,
   ANIMAL_PROVIDER,
 } from './animal/animal-provider.interface';
-import { AnimalService } from './animal/animal.service';
+import { SymbolAnimalService } from './animal/animal.service';
 
 @Injectable()
 export class SymbolTokenService {
@@ -18,7 +18,7 @@ export class SymbolTokenService {
   @CustomInject(ANIMAL_PROVIDER, { multi: true })
   private animalProviders!: AnimalProviderInteface[];
 
-  constructor(private readonly animalService: AnimalService) {}
+  constructor(private readonly animalService: SymbolAnimalService) {}
 
   whatSaysAnimalsWithInjector() {
     return this.customInjector

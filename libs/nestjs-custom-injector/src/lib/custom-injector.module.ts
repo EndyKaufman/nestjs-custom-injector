@@ -1,4 +1,5 @@
 import { DynamicModule, Module, ModuleMetadata } from '@nestjs/common';
+import { CustomInjectorBootstrapService } from './custom-injector-bootstrap.service';
 import { CustomInjectorService } from './custom-injector.service';
 
 @Module({
@@ -15,6 +16,7 @@ export class CustomInjectorModule {
   static forRoot(): DynamicModule {
     return {
       module: CustomInjectorModule,
+      providers: [CustomInjectorBootstrapService],
     };
   }
 

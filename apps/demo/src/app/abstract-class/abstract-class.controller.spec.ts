@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CustomInjectorModule } from 'nestjs-custom-injector';
+import {
+  CustomInjectorBootstrapService,
+  CustomInjectorModule,
+} from 'nestjs-custom-injector';
 import { AbstractClassController } from './abstract-class.controller';
 import { AbstractClassModule } from './abstract-class.module';
 
@@ -13,11 +16,14 @@ describe('AbstractClassController (unit)', () => {
     app = await Test.createTestingModule({
       imports: [CustomInjectorModule.forRoot(), AbstractClassModule],
     }).compile();
+    await app
+      .get<CustomInjectorBootstrapService>(CustomInjectorBootstrapService)
+      .onApplicationBootstrap();
     controller = app.get<AbstractClassController>(AbstractClassController);
   });
 
   describe('Demo - collect providers with string token type', () => {
-    it("Get all types of animals (@CustomInject(AbstractAnimalProvider, { multi: true, propertyName: 'type' }))", () => {
+    it("Get all types of animals (@CustomInject(AbstractAnimalProvider['type'], { multi: true, propertyName: 'type' }))", () => {
       const result = controller.animalTypesWithInject();
       expect([
         'dog',

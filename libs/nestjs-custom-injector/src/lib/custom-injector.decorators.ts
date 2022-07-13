@@ -1,14 +1,15 @@
 import { InstanceToken } from '@nestjs/core/injector/module';
 import { CustomInjectorService } from './custom-injector.service';
+import { getCustomInjectorStorage } from './custom-injector.storage';
+import {
+  CustomInjectorError,
+  GetProviderOptions,
+  GetProvidersOptions,
+  InjectedProvidersStorageItemType,
+} from './custom-injector.types';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const injectedProviders: Record<any, Record<any, any[]> | any> = {};
 export function CustomInjector() {
-  return function (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    target: any,
-    propertyKey: string
-  ) {
+  return function (target: unknown, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
       get: function () {
         return CustomInjectorService.instance;
@@ -17,33 +18,74 @@ export function CustomInjector() {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function CustomInject<D = any>(
+export function CustomInject<
+  T,
+  E extends CustomInjectorError = CustomInjectorError
+>(
   token: InstanceToken,
-  options?: {
-    static?: boolean;
-    multi?: boolean;
-    propertyName?: string;
-    defaultPropertyValue?: D;
-  }
+  options?:
+    | (GetProvidersOptions<T> & {
+        lazy?: boolean;
+        multi: true;
+      })
+    | (GetProviderOptions<T, E> & {
+        lazy?: boolean;
+      })
 ) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tookenKey = token as any;
-  return function (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    target: any,
-    propertyKey: string
-  ) {
+  return function (target: unknown, propertyKey: string) {
+    let index = getCustomInjectorStorage().findIndex(
+      (item) => item.target === target && item.token === token
+    );
+    let injectedProvidersStorageItem: InjectedProvidersStorageItemType;
+    if (index === -1) {
+      injectedProvidersStorageItem = {
+        appiled: false,
+        instance: null,
+        init: function () {
+          if (this.options?.multi) {
+            this.instance = CustomInjectorService.instance.getProviders(
+              this.token,
+              this.options
+            );
+          } else {
+            this.instance = CustomInjectorService.instance.getProvider(
+              this.token,
+              this.options,
+              this
+            );
+          }
+        },
+        asyncInit: async function () {
+          if (this.options?.multi) {
+            this.instance =
+              await CustomInjectorService.instance.getAsyncProviders(
+                this.token,
+                this.options
+              );
+          } else {
+            this.instance =
+              await CustomInjectorService.instance.getAsyncProvider(
+                this.token,
+                this.options,
+                this
+              );
+          }
+        },
+        target,
+        token,
+        options,
+      };
+      getCustomInjectorStorage().push(injectedProvidersStorageItem);
+      index = getCustomInjectorStorage().length;
+    } else {
+      injectedProvidersStorageItem = getCustomInjectorStorage()[index];
+    }
     Object.defineProperty(target, propertyKey, {
       get: function () {
-        if (!injectedProviders[target]) {
-          injectedProviders[target] = {};
+        if (options?.lazy) {
+          injectedProvidersStorageItem.init();
         }
-        if (!injectedProviders[target]?.[tookenKey] || !options?.static) {
-          injectedProviders[target][tookenKey] =
-            CustomInjectorService.instance.getProviders(token, options);
-        }
-        return injectedProviders[target][tookenKey];
+        return injectedProvidersStorageItem.instance;
       },
     });
   };

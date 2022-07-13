@@ -13,6 +13,7 @@ describe('StringTokenController (unit)', () => {
     app = await Test.createTestingModule({
       imports: [CustomInjectorModule.forRoot(), StringTokenModule],
     }).compile();
+    await app.init();
     controller = app.get<StringTokenController>(StringTokenController);
   });
 

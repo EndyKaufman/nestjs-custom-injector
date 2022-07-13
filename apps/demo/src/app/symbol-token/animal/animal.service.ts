@@ -6,7 +6,7 @@ import {
 } from '../animal/animal-provider.interface';
 
 @Injectable()
-export class AnimalService {
+export class SymbolAnimalService {
   constructor(private readonly customInjectorService: CustomInjectorService) {}
 
   getAnimals() {
