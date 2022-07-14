@@ -18,7 +18,7 @@ describe('AbstractClassController (e2e)', () => {
   });
 
   describe('Demo - collect providers with string token type', () => {
-    it("Get all types of animals (@CustomInject(AbstractAnimalProvider, { multi: true, propertyName: 'type' }))", () => {
+    it("Get all types of animals (@CustomInject(AbstractAnimalProvider['type'], { multi: true, propertyName: 'type' }))", () => {
       return request(app.getHttpServer())
         .get('/abstract-class/animal-types-with-inject')
         .expect(200)

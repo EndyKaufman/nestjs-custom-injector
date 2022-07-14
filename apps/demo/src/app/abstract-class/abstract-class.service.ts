@@ -5,7 +5,7 @@ import {
   CustomInjectorService,
 } from 'nestjs-custom-injector';
 import { AbstractAnimalProvider } from './animal/animal.provider';
-import { AnimalService } from './animal/animal.service';
+import { AbstractAnimalService } from './animal/animal.service';
 
 @Injectable()
 export class AbstractClassService {
@@ -15,11 +15,11 @@ export class AbstractClassService {
   @CustomInject(AbstractAnimalProvider, { multi: true })
   private animalProviders!: AbstractAnimalProvider[];
 
-  constructor(private readonly animalService: AnimalService) {}
+  constructor(private readonly animalService: AbstractAnimalService) {}
 
   whatSaysAnimalsWithInjector() {
     return this.customInjector
-      .getComponentsByClass<AbstractAnimalProvider>(AbstractAnimalProvider)
+      .getProviders<AbstractAnimalProvider>(AbstractAnimalProvider)
       .map((animal) => `${animal.type} say ${animal.say()}`);
   }
 
@@ -37,7 +37,7 @@ export class AbstractClassService {
 
   whoSayWithInjector(voice: string) {
     const animal = this.customInjector
-      .getComponentsByClass<AbstractAnimalProvider>(AbstractAnimalProvider)
+      .getProviders<AbstractAnimalProvider>(AbstractAnimalProvider)
       .find((animal) => animal.say() === voice);
     if (!animal) {
       return { error: `I don't know who say ${voice}` };

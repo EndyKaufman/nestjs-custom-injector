@@ -8,7 +8,7 @@ import {
   AnimalProviderInteface,
   ANIMAL_PROVIDER,
 } from './animal/animal-provider.interface';
-import { AnimalService } from './animal/animal.service';
+import { StringAnimalService } from './animal/animal.service';
 
 @Injectable()
 export class StringTokenService {
@@ -18,11 +18,11 @@ export class StringTokenService {
   @CustomInject(ANIMAL_PROVIDER, { multi: true })
   private animalProviders!: AnimalProviderInteface[];
 
-  constructor(private readonly animalService: AnimalService) {}
+  constructor(private readonly animalService: StringAnimalService) {}
 
   whatSaysAnimalsWithInjector() {
     return this.customInjector
-      .getComponentsByName<AnimalProviderInteface>(ANIMAL_PROVIDER)
+      .getProviders<AnimalProviderInteface>(ANIMAL_PROVIDER)
       .map((animal) => `${animal.type} say ${animal.say()}`);
   }
 
@@ -32,7 +32,7 @@ export class StringTokenService {
     );
   }
 
-  whatSaysAnimals() {
+  async whatSaysAnimals() {
     return this.animalService
       .getAnimals()
       .map((animal) => `${animal.type} say ${animal.say()}`);
@@ -40,7 +40,7 @@ export class StringTokenService {
 
   whoSayWithInjector(voice: string) {
     const animal = this.customInjector
-      .getComponentsByName<AnimalProviderInteface>(ANIMAL_PROVIDER)
+      .getProviders<AnimalProviderInteface>(ANIMAL_PROVIDER)
       .find((animal) => animal.say() === voice);
     if (!animal) {
       return { error: `I don't know who say ${voice}` };

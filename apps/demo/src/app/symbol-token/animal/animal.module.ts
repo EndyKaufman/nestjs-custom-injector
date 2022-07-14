@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { CustomInjectorModule } from 'nestjs-custom-injector';
-import { AnimalService } from './animal.service';
+import { SymbolAnimalService } from './animal.service';
 
 @Module({
   imports: [CustomInjectorModule],
-  providers: [AnimalService],
-  exports: [AnimalService],
+  providers: [SymbolAnimalService],
+  exports: [SymbolAnimalService],
 })
 export class AnimalModule {}

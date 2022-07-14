@@ -1,49 +1,46 @@
 import { InstanceToken } from '@nestjs/core/injector/module';
 import { CustomInjectorService } from './custom-injector.service';
+import { getCustomInjectorStorage } from './custom-injector.storage';
+import {
+  CustomInjectorError,
+  InjectedProvidersStorageItemOptions,
+} from './custom-injector.types';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const injectedProviders: Record<any, Record<any, any[]> | any> = {};
 export function CustomInjector() {
-  return function (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    target: any,
-    propertyKey: string
-  ) {
+  return function (target: unknown, propertyKey: string) {
     Object.defineProperty(target, propertyKey, {
       get: function () {
-        return CustomInjectorService.instance;
+        return CustomInjectorService.getInstance();
       },
     });
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function CustomInject<D = any>(
-  token: InstanceToken,
-  options?: {
-    static?: boolean;
-    multi?: boolean;
-    propertyName?: string;
-    defaultPropertyValue?: D;
-  }
-) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tookenKey = token as any;
-  return function (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    target: any,
-    propertyKey: string
-  ) {
+export function CustomInject<
+  T,
+  E extends CustomInjectorError<T> = CustomInjectorError<T>
+>(token: InstanceToken, options?: InjectedProvidersStorageItemOptions<T, E>) {
+  return function (target: unknown, propertyKey: string) {
+    let injectedProvidersStorageItem = getCustomInjectorStorage<T, E>().find(
+      (item) => item.target === target && item.token === token
+    );
+    if (injectedProvidersStorageItem === undefined) {
+      injectedProvidersStorageItem =
+        CustomInjectorService.getInstance().createInjectedProvidersStorageItem<
+          T,
+          E
+        >(token, target, options || {});
+      getCustomInjectorStorage<T, E>().push(injectedProvidersStorageItem);
+    }
     Object.defineProperty(target, propertyKey, {
       get: function () {
-        if (!injectedProviders[target]) {
-          injectedProviders[target] = {};
+        if (!injectedProvidersStorageItem) {
+          throw new CustomInjectorError('injectedProvidersStorageItem not set');
         }
-        if (!injectedProviders[target]?.[tookenKey] || !options?.static) {
-          injectedProviders[target][tookenKey] =
-            CustomInjectorService.instance.getProviders(token, options);
+        if (options?.lazy) {
+          injectedProvidersStorageItem.init();
         }
-        return injectedProviders[target][tookenKey];
+        return injectedProvidersStorageItem.instance;
       },
     });
   };
