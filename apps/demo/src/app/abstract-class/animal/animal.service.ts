@@ -7,7 +7,7 @@ export class AbstractAnimalService {
   constructor(private readonly customInjectorService: CustomInjectorService) {}
 
   getAnimals() {
-    return this.customInjectorService.getComponentsByName<AbstractAnimalProvider>(
+    return this.customInjectorService.getProviders<AbstractAnimalProvider>(
       AbstractAnimalProvider
     );
   }

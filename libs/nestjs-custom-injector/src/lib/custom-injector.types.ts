@@ -1,45 +1,72 @@
 import { InstanceToken } from '@nestjs/core/injector/module';
 
-export type InjectedProvidersStorageItemType = {
+export type InjectedProvidersStorageItemOptions<
+  T,
+  E extends CustomInjectorError<T> = CustomInjectorError<T>
+> =
+  | (GetProvidersOptions<T, E> & {
+      lazy?: boolean;
+      multi: true;
+    })
+  | (GetProviderOptions<T, E> & {
+      lazy?: boolean;
+      multi?: false;
+    });
+
+export type InjectedProvidersStorageItem<
+  T = unknown,
+  E extends CustomInjectorError<T> = CustomInjectorError<T>
+> = {
   target: unknown;
   token: InstanceToken;
-  options?: (
-    | GetProvidersOptions<unknown>
-    | GetProviderOptions<unknown, CustomInjectorError>
-  ) & {
-    lazy?: boolean;
-  };
-  instance: unknown | unknown[];
+  options?: InjectedProvidersStorageItemOptions<T, E>;
+  instance: null | T | T[];
   appiled: boolean;
-  init: () => unknown | unknown[];
-  asyncInit: () => Promise<unknown> | Promise<unknown[]>;
+  init: () => void;
+  asyncInit: () => Promise<void>;
 };
 
-export class CustomInjectorError extends Error {
+export class CustomInjectorError<T = unknown> extends Error {
   constructor(
     public override message: string,
-    public injectedProvidersStorageItem?: InjectedProvidersStorageItemType
+    public injectedProvidersStorageItem?: InjectedProvidersStorageItem<T>
   ) {
     super(message);
   }
 }
 
-export interface GetComponentsOptions<T> {
+export interface GetComponentsOptions<T, E extends CustomInjectorError<T>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  factory?: (value: any) => T | Promise<T>;
+  providerFactory?: (value: any) => T | Promise<T>;
+  defaultProvidersValue?: T[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  providersFactory?: (value: any) => T[];
+  errorFactory?: (
+    message: string,
+    injectedProvidersStorageItem?: InjectedProvidersStorageItem<T, E>
+  ) => E;
 }
 
-export interface GetLastComponentOptions<T, E> {
+export interface GetLastComponentOptions<T, E extends CustomInjectorError<T>> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  factory?: (value: any) => T | Promise<T>;
-  defaultValue?: T | Promise<T> | undefined;
-  error?: E | undefined;
+  providerFactory?: (value: any) => T | Promise<T>;
+  defaultProviderValue?: T | Promise<T>;
+  errorFactory?: (
+    message: string,
+    injectedProvidersStorageItem?: InjectedProvidersStorageItem<T, E>
+  ) => E;
 }
 
-export type GetProvidersOptions<T> = GetComponentsOptions<T> & {
-  propertyName?: string;
+export type GetProvidersOptions<
+  T,
+  E extends CustomInjectorError<T>
+> = GetComponentsOptions<T, E> & {
+  propertyName?: keyof T;
 };
 
-export type GetProviderOptions<T, E> = GetLastComponentOptions<T, E> & {
-  propertyName?: string;
+export type GetProviderOptions<
+  T,
+  E extends CustomInjectorError<T>
+> = GetLastComponentOptions<T, E> & {
+  propertyName?: keyof T;
 };

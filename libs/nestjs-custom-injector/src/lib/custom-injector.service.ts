@@ -3,37 +3,128 @@ import { ModulesContainer } from '@nestjs/core';
 import { STATIC_CONTEXT } from '@nestjs/core/injector/constants';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { InstanceToken, Module } from '@nestjs/core/injector/module';
-import { getCustomInjectorStorage } from './custom-injector.storage';
 import {
   CustomInjectorError,
   GetComponentsOptions,
   GetLastComponentOptions,
   GetProviderOptions,
   GetProvidersOptions,
-  InjectedProvidersStorageItemType,
+  InjectedProvidersStorageItem,
+  InjectedProvidersStorageItemOptions,
 } from './custom-injector.types';
+import { isPromise } from './custom-injector.utils';
 
 @Injectable()
 export class CustomInjectorService {
-  public static instance: CustomInjectorService;
-
-  constructor(private readonly modulesContainer: ModulesContainer) {
-    CustomInjectorService.instance = this;
+  public static _instance = new CustomInjectorService();
+  public static getInstance() {
+    return CustomInjectorService._instance;
   }
 
-  public async initAllProviders() {
-    const items = getCustomInjectorStorage();
-    for (let index = 0; index < items.length; index++) {
-      if (!items[index].options?.lazy) {
-        await items[index].asyncInit();
-      }
-    }
+  constructor(private readonly modulesContainer?: ModulesContainer) {
+    CustomInjectorService._instance = this;
   }
 
-  public getProvider<T, E extends CustomInjectorError = CustomInjectorError>(
+  public getProvider<
+    T,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
+  >(token: InstanceToken, options?: GetProviderOptions<T, E>): T {
+    return this._getProvider<T, E>(token, options || {}, undefined);
+  }
+
+  public async getAsyncProvider<
+    T,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
+  >(token: InstanceToken, options?: GetProviderOptions<T, E>): Promise<T> {
+    return this._getAsyncProvider<T, E>(token, options || {}, undefined);
+  }
+
+  public getProviders<
+    T,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
+  >(token: InstanceToken, options?: GetProvidersOptions<T, E>): T[] {
+    return this._getProviders<T, E>(token, options || {}, undefined);
+  }
+
+  public async getAsyncProviders<
+    T,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
+  >(token: InstanceToken, options?: GetProvidersOptions<T, E>): Promise<T[]> {
+    return this._getAsyncProviders<T, E>(token, options || {}, undefined);
+  }
+
+  public createInjectedProvidersStorageItem<
+    T,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
+  >(
     token: InstanceToken,
-    options?: GetProviderOptions<T, E>,
-    injectedProvidersStorageItem?: InjectedProvidersStorageItemType
+    target: unknown,
+    options: InjectedProvidersStorageItemOptions<T, E>
+  ) {
+    return {
+      appiled: false,
+      instance: null,
+      init: function () {
+        this.options = {
+          ...(this.options || {}),
+          multi: Boolean(this.options.multi),
+        };
+        if (!this.options?.lazy && this.appiled) {
+          return;
+        }
+        if (this.options?.multi) {
+          this.instance = CustomInjectorService.getInstance()._getProviders(
+            this.token,
+            this.options,
+            this
+          );
+        } else {
+          this.instance = CustomInjectorService.getInstance()._getProvider(
+            this.token,
+            this.options,
+            this
+          );
+        }
+        this.appiled = true;
+      },
+      asyncInit: async function () {
+        this.options = {
+          ...(this.options || {}),
+          multi: Boolean(this.options.multi),
+        };
+        if (!this.options?.lazy && this.appiled) {
+          return;
+        }
+        if (this.options?.multi) {
+          this.instance =
+            await CustomInjectorService.getInstance()._getAsyncProviders(
+              this.token,
+              this.options,
+              this
+            );
+        } else {
+          this.instance =
+            await CustomInjectorService.getInstance()._getAsyncProvider(
+              this.token,
+              this.options,
+              this
+            );
+        }
+        this.appiled = true;
+      },
+      target,
+      token,
+      options,
+    } as InjectedProvidersStorageItem<T, E>;
+  }
+
+  private _getProvider<
+    T,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
+  >(
+    token: InstanceToken,
+    options: GetProviderOptions<T, E>,
+    injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
   ): T {
     const object = this.getOneProvider<T, E>(
       token,
@@ -53,23 +144,25 @@ export class CustomInjectorService {
 
         return propertyObject as T;
       }
-      if (options?.error) {
-        throw this.errorFactory(token, injectedProvidersStorageItem);
-      }
+      throw this.errorFactory<T>(
+        token,
+        injectedProvidersStorageItem,
+        options?.errorFactory
+      );
     }
 
     return object as T;
   }
 
-  public async getAsyncProvider<
+  private async _getAsyncProvider<
     T,
-    E extends CustomInjectorError = CustomInjectorError
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
   >(
     token: InstanceToken,
-    options?: GetProviderOptions<T, E>,
-    injectedProvidersStorageItem?: InjectedProvidersStorageItemType
+    options: GetProviderOptions<T, E>,
+    injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
   ): Promise<T> {
-    const object = this.getOneProvider<T, E>(
+    let object = this.getOneProvider<T, E>(
       token,
       options,
       injectedProvidersStorageItem
@@ -79,26 +172,31 @@ export class CustomInjectorService {
         options || {},
         'propertyName'
       )?.value;
+
+      if (isPromise(object)) {
+        object = await object;
+      }
+
       if (Object.getOwnPropertyDescriptor(object || {}, propertyName)) {
         const propertyObject = Object.getOwnPropertyDescriptor(
           object || {},
           propertyName
         )?.value;
 
-        if (
-          Object.prototype.toString.call(propertyObject) === '[object Promise]'
-        ) {
+        if (isPromise(propertyObject)) {
           return await propertyObject;
         } else {
           return propertyObject as T;
         }
       }
-      if (options?.error) {
-        throw this.errorFactory(token, injectedProvidersStorageItem);
-      }
+      throw this.errorFactory(
+        token,
+        injectedProvidersStorageItem,
+        options?.errorFactory
+      );
     }
 
-    if (Object.prototype.toString.call(object) === '[object Promise]') {
+    if (isPromise(object)) {
       return await object;
     } else {
       return object as T;
@@ -107,30 +205,41 @@ export class CustomInjectorService {
 
   private getOneProvider<
     T,
-    E extends CustomInjectorError = CustomInjectorError
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
   >(
     token: InstanceToken,
-    options: GetProviderOptions<T, E> | undefined,
-    injectedProvidersStorageItem: InjectedProvidersStorageItemType | undefined
+    options: GetProviderOptions<T, E>,
+    injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
   ) {
-    return typeof token === 'string' || typeof token === 'symbol'
-      ? this.getLastComponentByName<T, E, GetLastComponentOptions<T, E>>(
+    return typeof token === 'string' ||
+      typeof token === 'symbol' ||
+      String(token).includes('Abstract') ||
+      String(token).includes('abstract')
+      ? this._getLastComponentByName<T, E, GetLastComponentOptions<T, E>>(
           token,
           options,
           injectedProvidersStorageItem
         )
-      : this.getLastComponentsByClass<T, E, GetLastComponentOptions<T, E>>(
+      : this._getLastComponentsByClass<T, E, GetLastComponentOptions<T, E>>(
           token,
           options,
           injectedProvidersStorageItem
         );
   }
 
-  public getProviders<T>(
+  private _getProviders<
+    T,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
+  >(
     token: InstanceToken,
-    options?: GetProvidersOptions<T>
+    options: GetProvidersOptions<T, E>,
+    injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
   ): T[] {
-    const objects = this.getManyProviders<T>(token, options);
+    const objects = this.getManyProviders<T, E>(
+      token,
+      options,
+      injectedProvidersStorageItem
+    );
 
     if (Object.getOwnPropertyDescriptor(options || {}, 'propertyName')) {
       const propertyName = Object.getOwnPropertyDescriptor(
@@ -155,27 +264,43 @@ export class CustomInjectorService {
     return resolvedObjects;
   }
 
-  private getManyProviders<T>(
+  private getManyProviders<
+    T,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
+  >(
     token: InstanceToken,
-    options: GetProvidersOptions<T> | undefined
+    options: GetProvidersOptions<T, E>,
+    injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
   ) {
-    return typeof token === 'string' || typeof token === 'symbol'
-      ? this.getComponentsByName<T, GetProvidersOptions<T>>(token, options)
-      : this.getComponentsByClass<
-          T,
-          T extends object
-            ? GetComponentsOptions<T>
-            : GetComponentsOptions<T> & {
-                propertyName: string;
-              }
-        >(token);
+    return typeof token === 'string' ||
+      typeof token === 'symbol' ||
+      String(token).includes('Abstract') ||
+      String(token).includes('abstract')
+      ? this._getComponentsByName<T, E, GetProvidersOptions<T, E>>(
+          token,
+          options,
+          injectedProvidersStorageItem
+        )
+      : this._getComponentsByClass<T, E, GetProvidersOptions<T, E>>(
+          token,
+          options,
+          injectedProvidersStorageItem
+        );
   }
 
-  public async getAsyncProviders<T>(
+  private async _getAsyncProviders<
+    T,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
+  >(
     token: InstanceToken,
-    options?: GetProvidersOptions<T>
+    options: GetProvidersOptions<T, E>,
+    injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
   ): Promise<T[]> {
-    const objects = this.getManyProviders<T>(token, options);
+    const objects = this.getManyProviders<T>(
+      token,
+      options,
+      injectedProvidersStorageItem
+    );
 
     if (Object.getOwnPropertyDescriptor(options || {}, 'propertyName')) {
       const propertyName = Object.getOwnPropertyDescriptor(
@@ -185,9 +310,7 @@ export class CustomInjectorService {
       const resolvedObjects: T[] = [];
       for (let index = 0; index < objects.length; index++) {
         let object: T;
-        if (
-          Object.prototype.toString.call(objects[index]) === '[object Promise]'
-        ) {
+        if (isPromise(objects[index])) {
           object = await objects[index];
         } else {
           object = objects[index] as T;
@@ -204,9 +327,7 @@ export class CustomInjectorService {
     const resolvedObjects: T[] = [];
     for (let index = 0; index < objects.length; index++) {
       let object: T;
-      if (
-        Object.prototype.toString.call(objects[index]) === '[object Promise]'
-      ) {
+      if (isPromise(objects[index])) {
         object = await objects[index];
       } else {
         object = objects[index] as T;
@@ -216,68 +337,96 @@ export class CustomInjectorService {
     return resolvedObjects;
   }
 
-  public getLastComponentByName<
+  private _getLastComponentByName<
     T,
-    E extends CustomInjectorError = CustomInjectorError,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>,
     O extends GetLastComponentOptions<T, E> = GetLastComponentOptions<T, E>
   >(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     token: string | symbol | Abstract<any>,
-    options?: O,
-    injectedProvidersStorageItem?: InjectedProvidersStorageItemType
+    options: O,
+    injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
   ): T | Promise<T> {
-    const components = this.getComponentsByName<T, O>(token, options);
-    const defaultValue = options?.defaultValue;
+    let components: T[];
+    try {
+      components = this._getComponentsByName<T, E, O>(
+        token,
+        options,
+        injectedProvidersStorageItem
+      );
+    } catch (err) {
+      components = [];
+    }
+    const defaultProviderValue = options?.defaultProviderValue;
     const component = components.length === 0 ? undefined : components[0];
-
     if (component === undefined) {
-      if (defaultValue === undefined) {
-        throw (
-          options?.error ||
-          this.errorFactory(token, injectedProvidersStorageItem)
+      if (defaultProviderValue === undefined) {
+        throw this.errorFactory(
+          token,
+          injectedProvidersStorageItem,
+          options?.errorFactory
         );
       }
-      return defaultValue;
+      return defaultProviderValue;
     }
 
     return component;
   }
 
-  public getLastComponentsByClass<
+  private _getLastComponentsByClass<
     T,
-    E extends CustomInjectorError = CustomInjectorError,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>,
     O extends GetLastComponentOptions<T, E> = GetLastComponentOptions<T, E>
   >(
     // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
     token: Type<any> | Function,
-    options?: O,
-    injectedProvidersStorageItem?: InjectedProvidersStorageItemType
+    options: O,
+    injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
   ): T | Promise<T> {
-    const components = this.getComponentsByClass<T, O>(token, options);
-    const defaultValue = options?.defaultValue;
+    let components: T[];
+    try {
+      components = this._getComponentsByClass<T, E, O>(
+        token,
+        options,
+        injectedProvidersStorageItem
+      );
+    } catch (err) {
+      components = [];
+    }
+    const defaultProviderValue = options?.defaultProviderValue;
     const component = components.length === 0 ? undefined : components[0];
 
     if (component === undefined) {
-      if (defaultValue === undefined) {
-        throw (
-          options?.error ||
-          this.errorFactory(token, injectedProvidersStorageItem)
+      if (defaultProviderValue === undefined) {
+        throw this.errorFactory(
+          token,
+          injectedProvidersStorageItem,
+          options?.errorFactory
         );
       }
-      return defaultValue;
+      return defaultProviderValue;
     }
 
     return component;
   }
 
-  public getComponentsByName<
+  private _getComponentsByName<
     T,
-    O extends GetComponentsOptions<T> = GetComponentsOptions<T>
+    E extends CustomInjectorError<T> = CustomInjectorError<T>,
+    O extends GetComponentsOptions<T, E> = GetComponentsOptions<T, E>
+  >(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  >(token: string | symbol | Abstract<any>, options?: O): T[] {
+    token: string | symbol | Abstract<any>,
+    options: O,
+    injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
+  ): T[] {
+    if (!this.modulesContainer) {
+      throw new CustomInjectorError(`this.modulesContainer not set`);
+    }
+
     const modulesMap = [...this.modulesContainer.entries()];
 
-    return modulesMap
+    let values = modulesMap
       .map(([, nestModule]: [string, Module]) => {
         const components = [...nestModule.providers.values()];
         return components
@@ -290,21 +439,48 @@ export class CustomInjectorService {
       })
       .reduce((all, cur) => all.concat(cur), [])
       .map((component) =>
-        options?.factory ? options?.factory(component) : component
-      ) as T[];
+        options?.providerFactory
+          ? options?.providerFactory(component)
+          : component
+      );
+    if (
+      values.length === 0 &&
+      !Object.getOwnPropertyDescriptor(options, 'providersFactory') &&
+      !Object.getOwnPropertyDescriptor(options, 'defaultProvidersValue')
+    ) {
+      throw this.errorFactory<T>(
+        token,
+        injectedProvidersStorageItem,
+        options?.errorFactory
+      );
+    }
+
+    if (options?.providersFactory) {
+      values = options.providersFactory(values);
+    }
+    if (options?.defaultProvidersValue) {
+      values = options.defaultProvidersValue;
+    }
+    return values as T[];
   }
 
-  public getComponentsByClass<
+  private _getComponentsByClass<
     T,
-    O extends GetComponentsOptions<T> = GetComponentsOptions<T>
+    E extends CustomInjectorError<T> = CustomInjectorError<T>,
+    O extends GetComponentsOptions<T, E> = GetComponentsOptions<T, E>
   >(
     // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
     cls: Type<any> | Abstract<any> | Function,
-    options?: O
+    options: O,
+    injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
   ): T[] {
+    if (!this.modulesContainer) {
+      throw new CustomInjectorError(`this.modulesContainer not set`);
+    }
+
     const modulesMap = [...this.modulesContainer.entries()];
 
-    return modulesMap
+    let values = modulesMap
       .map(([, nestModule]: [string, Module]) => {
         const components = [...nestModule.providers.values()];
 
@@ -321,18 +497,60 @@ export class CustomInjectorService {
       })
       .reduce((all, cur) => all.concat(cur), [])
       .map((component) =>
-        options?.factory ? options?.factory(component) : component
-      ) as T[];
+        options?.providerFactory
+          ? options?.providerFactory(component)
+          : component
+      );
+
+    if (
+      values.length === 0 &&
+      !Object.getOwnPropertyDescriptor(options, 'providersFactory') &&
+      !Object.getOwnPropertyDescriptor(options, 'defaultProvidersValue')
+    ) {
+      throw this.errorFactory(
+        cls,
+        injectedProvidersStorageItem,
+        options?.errorFactory
+      );
+    }
+
+    if (options?.providersFactory) {
+      values = options.providersFactory(values);
+    }
+    if (options?.defaultProvidersValue) {
+      values = options.defaultProvidersValue;
+    }
+    return values as T[];
   }
 
-  private errorFactory(
+  private errorFactory<
+    T,
+    E extends CustomInjectorError<T> = CustomInjectorError<T>
+  >(
     token: InstanceToken,
-    injectedProvidersStorageItem?: InjectedProvidersStorageItemType
-  ): CustomInjectorError | undefined {
-    return new CustomInjectorError(
-      `Provider "${token.toString()}" not found!`,
-      injectedProvidersStorageItem
-    );
+    injectedProvidersStorageItem?: InjectedProvidersStorageItem<T, E>,
+    errorFactory?: (
+      message: string,
+      injectedProvidersStorageItem?: InjectedProvidersStorageItem<T, E>
+    ) => E
+  ): E {
+    return errorFactory
+      ? errorFactory(
+          `${
+            injectedProvidersStorageItem?.options?.multi
+              ? 'Providers'
+              : 'Provider'
+          } "${token.toString()}" not found!`,
+          injectedProvidersStorageItem
+        )
+      : (new CustomInjectorError<T>(
+          `${
+            injectedProvidersStorageItem?.options?.multi
+              ? 'Providers'
+              : 'Provider'
+          } "${token.toString()}" not found!`,
+          injectedProvidersStorageItem
+        ) as E);
   }
 
   private toDiscoveredClass<T>(

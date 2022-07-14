@@ -11,7 +11,7 @@ import { SymbolTokenService } from './symbol-token.service';
 @ApiTags('symbol-token')
 @Controller('symbol-token')
 export class SymbolTokenController {
-  @CustomInject<AnimalProviderInteface['type']>(ANIMAL_PROVIDER, {
+  @CustomInject<AnimalProviderInteface>(ANIMAL_PROVIDER, {
     multi: true,
     propertyName: 'type',
   })

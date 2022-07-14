@@ -11,7 +11,7 @@ import { StringTokenService } from './string-token.service';
 @ApiTags('string-token')
 @Controller('string-token')
 export class StringTokenController {
-  @CustomInject<AnimalProviderInteface['type']>(ANIMAL_PROVIDER, {
+  @CustomInject<AnimalProviderInteface>(ANIMAL_PROVIDER, {
     multi: true,
     propertyName: 'type',
   })

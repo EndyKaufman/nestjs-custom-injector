@@ -22,7 +22,7 @@ export class StringTokenService {
 
   whatSaysAnimalsWithInjector() {
     return this.customInjector
-      .getComponentsByName<AnimalProviderInteface>(ANIMAL_PROVIDER)
+      .getProviders<AnimalProviderInteface>(ANIMAL_PROVIDER)
       .map((animal) => `${animal.type} say ${animal.say()}`);
   }
 
@@ -40,7 +40,7 @@ export class StringTokenService {
 
   whoSayWithInjector(voice: string) {
     const animal = this.customInjector
-      .getComponentsByName<AnimalProviderInteface>(ANIMAL_PROVIDER)
+      .getProviders<AnimalProviderInteface>(ANIMAL_PROVIDER)
       .find((animal) => animal.say() === voice);
     if (!animal) {
       return { error: `I don't know who say ${voice}` };
