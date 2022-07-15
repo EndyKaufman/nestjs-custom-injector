@@ -158,74 +158,74 @@ describe('One provider by property (unit)', () => {
     await app.close();
   });
 
-  // it('Create provider with factory', async () => {
-  //   interface CProvider {
-  //     type: string;
-  //   }
-  //   const C_PROVIDER = Symbol('C_PROVIDER');
-  //   @Injectable()
-  //   class C1 {
-  //     name = 'c1';
-  //   }
-  //   @Injectable()
-  //   class P {
-  //     @CustomInject<CProvider>(C_PROVIDER, {
-  //       propertyName: 'type',
-  //       providerFactory: (data) => ({ type: data.name }),
-  //     })
-  //     provider!: CProvider['type'];
-  //   }
-  //   const module = await Test.createTestingModule({
-  //     imports: [
-  //       CustomInjectorModule.forRoot(),
-  //       CustomInjectorModule.forFeature({
-  //         providers: [{ provide: C_PROVIDER, useClass: C1 }],
-  //       }),
-  //     ],
-  //     providers: [P],
-  //     exports: [P],
-  //   }).compile();
-  //   const app = module.createNestApplication();
-  //   await app.init();
-  //   const p = app.get<P>(P);
-  //   expect(p.provider).toEqual('c1');
-  //   await app.close();
-  // });
-  //
-  // it('Create provider with async factory', async () => {
-  //   interface CProvider {
-  //     type: string;
-  //   }
-  //   const C_PROVIDER = Symbol('C_PROVIDER');
-  //   @Injectable()
-  //   class C1 {
-  //     name = 'c1';
-  //   }
-  //   @Injectable()
-  //   class P {
-  //     @CustomInject<CProvider>(C_PROVIDER, {
-  //       propertyName: 'type',
-  //       providerFactory: (data) =>
-  //         new Promise((resolve) =>
-  //           setTimeout(() => resolve({ type: data.name }), 1000)
-  //         ),
-  //     })
-  //     provider!: CProvider['type'];
-  //   }
-  //   const module = await Test.createTestingModule({
-  //     imports: [
-  //       CustomInjectorModule.forRoot(),
-  //       CustomInjectorModule.forFeature({
-  //         providers: [{ provide: C_PROVIDER, useClass: C1 }],
-  //       }),
-  //     ],
-  //     providers: [P],
-  //     exports: [P],
-  //   }).compile();
-  //   const app = module.createNestApplication();
-  //   await app.init();
-  //   const p = app.get<P>(P);
-  //   expect(p.provider).toEqual('c1');
-  //   await app.close();
-  // });
+  it('Create provider with factory', async () => {
+    interface CProvider {
+      type: string;
+    }
+    const C_PROVIDER = Symbol('C_PROVIDER');
+    @Injectable()
+    class C1 {
+      name = 'c1';
+    }
+    @Injectable()
+    class P {
+      @CustomInject<CProvider>(C_PROVIDER, {
+        propertyName: 'type',
+        providerFactory: (data) => ({ type: data.name }),
+      })
+      provider!: CProvider['type'];
+    }
+    const module = await Test.createTestingModule({
+      imports: [
+        CustomInjectorModule.forRoot(),
+        CustomInjectorModule.forFeature({
+          providers: [{ provide: C_PROVIDER, useClass: C1 }],
+        }),
+      ],
+      providers: [P],
+      exports: [P],
+    }).compile();
+    const app = module.createNestApplication();
+    await app.init();
+    const p = app.get<P>(P);
+    expect(p.provider).toEqual('c1');
+    await app.close();
+  });
+
+  it('Create provider with async factory', async () => {
+    interface CProvider {
+      type: string;
+    }
+    const C_PROVIDER = Symbol('C_PROVIDER');
+    @Injectable()
+    class C1 {
+      name = 'c1';
+    }
+    @Injectable()
+    class P {
+      @CustomInject<CProvider>(C_PROVIDER, {
+        propertyName: 'type',
+        providerFactory: (data) =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ type: data.name }), 1000)
+          ),
+      })
+      provider!: CProvider['type'];
+    }
+    const module = await Test.createTestingModule({
+      imports: [
+        CustomInjectorModule.forRoot(),
+        CustomInjectorModule.forFeature({
+          providers: [{ provide: C_PROVIDER, useClass: C1 }],
+        }),
+      ],
+      providers: [P],
+      exports: [P],
+    }).compile();
+    const app = module.createNestApplication();
+    await app.init();
+    const p = app.get<P>(P);
+    expect(p.provider).toEqual('c1');
+    await app.close();
+  });
 });
