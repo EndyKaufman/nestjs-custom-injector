@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.0.2](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.0.1...v2.0.2) (2022-07-15)
+
+### Bug Fixes
+
+- append DiscoveryModule to imports of CustomInjectorCoreModule ([55a4cab](https://github.com/EndyKaufman/nestjs-custom-injector/commit/55a4cab519d21b21148a4783b07f749214c900a4))
+- restore peerDependencies of lib ([1913477](https://github.com/EndyKaufman/nestjs-custom-injector/commit/1913477d8f32ba00c2af84f273e04fc0c49f6f23))
+
 ### [2.0.1](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.0.0...v2.0.1) (2022-07-14)
 
 ## [2.0.0](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v1.0.1...v2.0.0) (2022-07-14)
