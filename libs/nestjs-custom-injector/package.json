@@ -32,8 +32,12 @@
       "email": "admin@site15.ru"
     }
   ],
+  "peerDependencies": {
+    "@nestjs/common": "^8.0.0",
+    "@nestjs/core": "^8.0.0"
+  },
   "dependencies": {
-    "tslib": "2.0.0"
+    "tslib": "^2.0.0"
   },
   "i18n": [
     {
