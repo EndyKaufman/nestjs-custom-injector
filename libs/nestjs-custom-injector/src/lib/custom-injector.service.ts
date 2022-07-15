@@ -1,8 +1,8 @@
 import { Abstract, Injectable, Scope, Type } from '@nestjs/common';
-import { ModulesContainer } from '@nestjs/core';
+import { DiscoveryService, ModulesContainer } from '@nestjs/core';
 import { STATIC_CONTEXT } from '@nestjs/core/injector/constants';
 import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
-import { InstanceToken, Module } from '@nestjs/core/injector/module';
+import { InstanceToken } from '@nestjs/core/injector/module';
 import {
   CustomInjectorError,
   GetComponentsOptions,
@@ -16,12 +16,14 @@ import { isPromise } from './custom-injector.utils';
 
 @Injectable()
 export class CustomInjectorService {
-  public static _instance = new CustomInjectorService();
+  public static _instance = new CustomInjectorService(
+    new DiscoveryService(new ModulesContainer())
+  );
   public static getInstance() {
     return CustomInjectorService._instance;
   }
 
-  constructor(private readonly modulesContainer?: ModulesContainer) {
+  constructor(private readonly discoveryService: DiscoveryService) {
     CustomInjectorService._instance = this;
   }
 
@@ -420,24 +422,18 @@ export class CustomInjectorService {
     options: O,
     injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
   ): T[] {
-    if (!this.modulesContainer) {
-      throw new CustomInjectorError(`this.modulesContainer not set`);
+    if (!this.discoveryService) {
+      throw new CustomInjectorError(`this.discoveryService not set`);
     }
 
-    const modulesMap = [...this.modulesContainer.entries()];
-
-    let values = modulesMap
-      .map(([, nestModule]: [string, Module]) => {
-        const components = [...nestModule.providers.values()];
-        return components
-          .filter(
-            (component) =>
-              component.scope !== Scope.REQUEST &&
-              (component.name === token || component.token === token)
-          )
-          .map((component) => this.toDiscoveredClass<T>(nestModule, component));
-      })
-      .reduce((all, cur) => all.concat(cur), [])
+    let values = this.discoveryService
+      .getProviders()
+      .filter(
+        (component) =>
+          component.scope !== Scope.REQUEST &&
+          (component.name === token || component.token === token)
+      )
+      .map((component) => this.toDiscoveredClass<T>(component))
       .map((component) =>
         options?.providerFactory
           ? options?.providerFactory(component)
@@ -474,28 +470,21 @@ export class CustomInjectorService {
     options: O,
     injectedProvidersStorageItem: InjectedProvidersStorageItem<T, E> | undefined
   ): T[] {
-    if (!this.modulesContainer) {
-      throw new CustomInjectorError(`this.modulesContainer not set`);
+    if (!this.discoveryService) {
+      throw new CustomInjectorError(`this.discoveryService not set`);
     }
 
-    const modulesMap = [...this.modulesContainer.entries()];
-
-    let values = modulesMap
-      .map(([, nestModule]: [string, Module]) => {
-        const components = [...nestModule.providers.values()];
-
-        return components
-          .filter((component) => component.scope !== Scope.REQUEST)
-          .map((component) => this.toDiscoveredClass<T>(nestModule, component))
-          .filter((obj) => {
-            try {
-              return obj && obj instanceof cls;
-            } catch (err) {
-              return false;
-            }
-          });
+    let values = this.discoveryService
+      .getProviders()
+      .filter((component) => component.scope !== Scope.REQUEST)
+      .map((component) => this.toDiscoveredClass<T>(component))
+      .filter((obj) => {
+        try {
+          return obj && obj instanceof cls;
+        } catch (err) {
+          return false;
+        }
       })
-      .reduce((all, cur) => all.concat(cur), [])
       .map((component) =>
         options?.providerFactory
           ? options?.providerFactory(component)
@@ -553,10 +542,7 @@ export class CustomInjectorService {
         ) as E);
   }
 
-  private toDiscoveredClass<T>(
-    nestModule: Module,
-    wrapper: InstanceWrapper
-  ): T {
+  private toDiscoveredClass<T>(wrapper: InstanceWrapper): T {
     const instanceHost: {
       instance: T;
     } = wrapper.getInstanceByContextId(
