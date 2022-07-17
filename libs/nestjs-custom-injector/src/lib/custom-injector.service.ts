@@ -120,6 +120,22 @@ export class CustomInjectorService {
     } as InjectedProvidersStorageItem<T, E>;
   }
 
+  async initAllNeedProviders() {
+    const items = this.discoveryService
+      .getProviders()
+      .map((component) => this.toDiscoveredClass<object>(component))
+      .filter(Boolean)
+      .map((c) =>
+        Reflect.getMetadataKeys(c).map((k) => Reflect.getMetadata(k, c))
+      )
+      .reduce((all, cur) => [...all, ...cur], []);
+    for (let index = 0; index < items.length; index++) {
+      if (!items[index].options?.lazy) {
+        await items[index].asyncInit();
+      }
+    }
+  }
+
   private _getProvider<
     T,
     E extends CustomInjectorError<T> = CustomInjectorError<T>

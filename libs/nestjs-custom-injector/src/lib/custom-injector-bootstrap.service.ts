@@ -1,21 +1,11 @@
-import {
-  Injectable,
-  OnApplicationBootstrap,
-  OnModuleDestroy,
-} from '@nestjs/common';
-import {
-  initAllProviders,
-  setCustomInjectorStorage,
-} from './custom-injector.storage';
+import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { CustomInjectorService } from './custom-injector.service';
 
 @Injectable()
-export class CustomInjectorBootstrapService
-  implements OnApplicationBootstrap, OnModuleDestroy
-{
-  onModuleDestroy() {
-    setCustomInjectorStorage([]);
-  }
+export class CustomInjectorBootstrapService implements OnApplicationBootstrap {
+  constructor(private readonly customInjectorService: CustomInjectorService) {}
+
   async onApplicationBootstrap() {
-    await initAllProviders();
+    await this.customInjectorService.initAllNeedProviders();
   }
 }

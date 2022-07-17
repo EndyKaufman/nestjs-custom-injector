@@ -405,4 +405,49 @@ describe('Multi providers (unit)', () => {
     expect(providers).toEqual([]);
     await app.close();
   });
+
+  it('Ignore custom injected providers when its not included in DI tree NestJS', async () => {
+    interface CProvider {
+      type: string;
+    }
+    const C_PROVIDER = Symbol('C_PROVIDER');
+    const C_PROVIDER_IGNORED = Symbol('C_PROVIDER_IGNORED');
+    @Injectable()
+    class C1 implements CProvider {
+      type = 'c1';
+    }
+    @Injectable()
+    class C2 implements CProvider {
+      type = 'c2';
+    }
+    @Injectable()
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    class P_IGNORED {
+      @CustomInject<CProvider>(C_PROVIDER_IGNORED, { multi: true })
+      providers!: CProvider[];
+    }
+    @Injectable()
+    class P {
+      @CustomInject<CProvider>(C_PROVIDER, { multi: true })
+      providers!: CProvider[];
+    }
+    const module = await Test.createTestingModule({
+      imports: [
+        CustomInjectorModule.forRoot(),
+        CustomInjectorModule.forFeature({
+          providers: [{ provide: C_PROVIDER, useClass: C1 }],
+        }),
+        CustomInjectorModule.forFeature({
+          providers: [{ provide: C_PROVIDER, useClass: C2 }],
+        }),
+      ],
+      providers: [P],
+      exports: [P],
+    }).compile();
+    const app = module.createNestApplication();
+    await app.init();
+    const p = app.get<P>(P);
+    expect(p.providers.map((o) => o.type)).toEqual(['c1', 'c2']);
+    await app.close();
+  });
 });
