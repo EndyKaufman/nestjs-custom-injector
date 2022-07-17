@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.0.2...v2.1.0) (2022-07-17)
+
+### Features
+
+- removed global storage for custom injector metadata, now use reflect metadata storage over classes for it, now ignore custom injected providers when its not included in DI tree NestJS ([5c9b1b7](https://github.com/EndyKaufman/nestjs-custom-injector/commit/5c9b1b7919c25bcf4b0aa22035f3106693cb9106))
+
 ### [2.0.2](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.0.1...v2.0.2) (2022-07-15)
 
 ### Bug Fixes
