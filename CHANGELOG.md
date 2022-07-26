@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.1](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.1.0...v2.1.1) (2022-07-26)
+
+### Bug Fixes
+
+- add check metadata key name of providers in initAllNeedProviders before run asyncInit ([efc67d9](https://github.com/EndyKaufman/nestjs-custom-injector/commit/efc67d971edf55eea7074558cbb4703a74008480))
+
 ## [2.1.0](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.0.2...v2.1.0) (2022-07-17)
 
 ### Features
