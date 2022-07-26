@@ -5,6 +5,7 @@ import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
 import { InstanceToken } from '@nestjs/core/injector/module';
 import {
   CustomInjectorError,
+  CUSTOM_INJECTOR_METADATA,
   GetComponentsOptions,
   GetLastComponentOptions,
   GetProviderOptions,
@@ -126,11 +127,13 @@ export class CustomInjectorService {
       .map((component) => this.toDiscoveredClass<object>(component))
       .filter(Boolean)
       .map((c) =>
-        Reflect.getMetadataKeys(c).map((k) => Reflect.getMetadata(k, c))
+        Reflect.getMetadataKeys(c)
+          .filter((k) => k.indexOf(CUSTOM_INJECTOR_METADATA) === 0)
+          .map((k) => Reflect.getMetadata(k, c))
       )
       .reduce((all, cur) => [...all, ...cur], []);
     for (let index = 0; index < items.length; index++) {
-      if (!items[index].options?.lazy) {
+      if (!items[index]?.options?.lazy && items[index].asyncInit) {
         await items[index].asyncInit();
       }
     }
