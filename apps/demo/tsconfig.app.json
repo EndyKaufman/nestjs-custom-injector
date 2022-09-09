@@ -8,6 +8,11 @@
     "target": "es2015"
   },
   "composite": true,
-  "exclude": ["**/*.spec.ts", "**/*.e2e-spec.ts", "**/*.test.ts"],
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.e2e-spec.ts",
+    "**/*.test.ts",
+    "jest.config.ts"
+  ],
   "include": ["**/*.ts"]
 }

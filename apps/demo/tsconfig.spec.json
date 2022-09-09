@@ -6,5 +6,11 @@
     "types": ["jest", "node"]
   },
   "composite": true,
-  "include": ["**/*.test.ts", "**/*.spec.ts", "**/*.e2e-spec.ts", "**/*.d.ts"]
+  "include": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/*.e2e-spec.ts",
+    "**/*.d.ts",
+    "jest.config.ts"
+  ]
 }
