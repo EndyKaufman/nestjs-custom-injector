@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.1.2](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.1.1...v2.1.2) (2022-09-09)
+
+### Bug Fixes
+
+- remove peerDependencies ([730f6cd](https://github.com/EndyKaufman/nestjs-custom-injector/commit/730f6cd70ac0aa6d5b9f6dcd8d3cc6f07b4bea36))
+
 ### [2.1.1](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.1.0...v2.1.1) (2022-07-26)
 
 ### Bug Fixes

@@ -1,6 +1,6 @@
 {
   "name": "nestjs-custom-injector",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Custom injecting logic for NestJS with support multi providing",
   "keywords": [
     "nestjs",
@@ -33,7 +33,7 @@
     }
   ],
   "dependencies": {
-    "tslib": "^2.0.0"
+    "tslib": "2.0.0"
   },
   "i18n": [
     {
