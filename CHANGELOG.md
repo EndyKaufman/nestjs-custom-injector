@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.2.1](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.2.0...v2.2.1) (2022-09-09)
+
+### Bug Fixes
+
+- add updateBuildableProjectDepsInPackageJson=false for disable append deps version to lib package json file ([77fc566](https://github.com/EndyKaufman/nestjs-custom-injector/commit/77fc566b57658a14450dd0419286b1f521674c0f))
+
 ## [2.2.0](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.1.2...v2.2.0) (2022-09-09)
 
 ### Features
