@@ -10,7 +10,8 @@
         "tsConfig": "libs/nestjs-custom-injector/tsconfig.lib.json",
         "packageJson": "libs/nestjs-custom-injector/package.json",
         "main": "libs/nestjs-custom-injector/src/index.ts",
-        "assets": ["libs/nestjs-custom-injector/*.md"]
+        "assets": ["libs/nestjs-custom-injector/*.md"],
+        "updateBuildableProjectDepsInPackageJson": false
       }
     },
     "lint": {
