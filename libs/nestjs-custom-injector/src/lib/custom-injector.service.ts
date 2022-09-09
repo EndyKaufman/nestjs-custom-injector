@@ -126,11 +126,19 @@ export class CustomInjectorService {
       .getProviders()
       .map((component) => this.toDiscoveredClass<object>(component))
       .filter(Boolean)
-      .map((c) =>
-        Reflect.getMetadataKeys(c)
-          .filter((k) => k.indexOf(CUSTOM_INJECTOR_METADATA) === 0)
-          .map((k) => Reflect.getMetadata(k, c))
-      )
+      .map((c) => {
+        try {
+          return Reflect.getMetadataKeys(c)
+            .filter((k) => k.indexOf(CUSTOM_INJECTOR_METADATA) === 0)
+            .map((k) => Reflect.getMetadata(k, c));
+        } catch (err) {
+          // todo: add support debug for library and catch all errors
+          if (process.env.DEBUG) {
+            console.error(err);
+          }
+          return [];
+        }
+      })
       .reduce((all, cur) => [...all, ...cur], []);
     for (let index = 0; index < items.length; index++) {
       if (!items[index]?.options?.lazy && items[index].asyncInit) {
