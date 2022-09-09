@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.2.0](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.1.2...v2.2.0) (2022-09-09)
+
+### Features
+
+- update deps, nest version 14.6.5 ([5f4382a](https://github.com/EndyKaufman/nestjs-custom-injector/commit/5f4382a56be86971589274276bb509952fbf45db))
+
 ### [2.1.2](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.1.1...v2.1.2) (2022-09-09)
 
 ### Bug Fixes
