@@ -39,3 +39,4 @@ testem.log
 Thumbs.db
 
 jest.result.json
+package-lock.json
