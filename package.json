@@ -15,8 +15,8 @@
   "license": "MIT",
   "author": "EndyKaufman <admin@site15.ru>",
   "engines": {
-    "node": ">=15",
-    "npm": ">=7"
+    "node": ">=14",
+    "npm": ">=6"
   },
   "bugs": {
     "url": "https://github.com/EndyKaufman/nestjs-custom-injector/issues"

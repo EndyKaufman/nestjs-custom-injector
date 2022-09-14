@@ -134,6 +134,7 @@ export class CustomInjectorService {
         } catch (err) {
           // todo: add support debug for library and catch all errors
           if (process.env.DEBUG) {
+            console.debug(c);
             console.error(err);
           }
           return [];
