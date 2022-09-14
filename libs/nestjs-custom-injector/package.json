@@ -1,6 +1,6 @@
 {
   "name": "nestjs-custom-injector",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Custom injecting logic for NestJS with support multi providing",
   "keywords": [
     "nestjs",

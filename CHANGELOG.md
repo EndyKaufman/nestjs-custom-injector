@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [2.2.3](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.2.2...v2.2.3) (2022-09-14)
+
+### Bug Fixes
+
+- add support work in node 14 ([#8](https://github.com/EndyKaufman/nestjs-custom-injector/issues/8)) ([2e56308](https://github.com/EndyKaufman/nestjs-custom-injector/commit/2e56308ca1f8ca794d45f40c4ed49b7b27c544f8))
+
 ### [2.2.2](https://github.com/EndyKaufman/nestjs-custom-injector/compare/v2.2.1...v2.2.2) (2022-09-09)
 
 ### Bug Fixes
