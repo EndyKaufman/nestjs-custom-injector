@@ -67,7 +67,7 @@
     "@types/node": "18.7.1",
     "@typescript-eslint/eslint-plugin": "5.33.1",
     "@typescript-eslint/parser": "5.33.1",
-    "cp-cli": "2.0.0",
+    "cp-cli": "^1.0.2",
     "eslint": "8.15.0",
     "eslint-config-prettier": "8.1.0",
     "husky": "8.0.1",
